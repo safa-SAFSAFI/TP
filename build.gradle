@@ -36,15 +36,33 @@ publishing {
     }
 }
 dependencies {
-    testImplementation platform('org.junit:junit-bom:5.10.0')
-    testImplementation 'org.junit.jupiter:junit-jupiter'
-    testImplementation 'io.cucumber:cucumber-java:8.9.0'
-    testImplementation 'io.cucumber:cucumber-spring:8.9.0' // If using Spring integration with Cucumber
-    testImplementation 'io.cucumber:cucumber-junit:8.9.0' // For running tests with JUnit
-
-
+    testImplementation 'io.cucumber:cucumber-java:7.10.0'  // Use the appropriate version
+    testImplementation 'io.cucumber:cucumber-spring:7.10.0' // If you're using Spring with Cucumber
+    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.7.0'  // For JUnit 5
+    testImplementation 'org.junit.jupiter:junit-jupiter-engine:5.7.0' // JUnit 5 engine
+    testImplementation 'org.junit.jupiter:junit-jupiter-params:5.7.0' // If you're using parameterized tests
 }
+
 
 test {
     useJUnitPlatform()
+}
+sonarqube {
+    properties {
+        // URL du serveur SonarQube
+        property "sonar.host.url", "http://localhost:9000" // URL du serveur SonarQube
+        property "sonar.token", "sqa_8dc885097724e00ab289d5bdf54d84aef581ebef" // Remplacez par votre token SonarQube généré
+
+
+        // Désactivation de la compilation implicite (selon l'avertissement de dépréciation)
+        property "sonar.skipCompile", "true" // Cela empêche SonarQube de déclencher la compilation automatique
+
+        // Paramètres supplémentaires de SonarQube, comme les inclusions/exclusions de fichiers
+        property "sonar.sources", "src/main/java"
+        property "sonar.tests", "src/test/java"
+        property "sonar.java.binaries", "build/classes"
+
+        // Cucumber Reports (optionnel)
+      //  property "sonar.cucumber.reportPaths", "build/reports/cucumber/cucumber.json" // Changez si vous générez des rapports JSON pour Cucumber
+    }
 }
