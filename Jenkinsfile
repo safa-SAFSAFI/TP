@@ -3,18 +3,21 @@ pipeline {
 
     stages {
         // Stage for running tests
-        stage('Test') {
-            steps {
-                // Run tests using Gradle
-                bat './gradlew test'
-                // Publish JUnit test results to Jenkins
-                junit 'build/test-results/test/*.xml'
-                // Publish Cucumber test results
-                cucumber buildStatus: 'UNSTABLE',
-                         reportTitle: 'My report',
-                         fileIncludePattern: 'build/reports/*.json'
-            }
-        }
+       stage('Test') {
+           steps {
+               // Run tests using Gradle
+               bat './gradlew test'
+
+               // Publish JUnit test results to Jenkins
+               junit 'build/test-results/test/*.xml'
+
+               // Publish Cucumber test results
+               cucumber buildStatus: 'UNSTABLE',
+                        reportTitle: 'Cucumber Test Report',
+                        fileIncludePattern: 'build/reports/cucumber/*.json'
+           }
+       }
+
 
         // Stage for code analysis using SonarQube
         stage('Code Analysis') {
@@ -57,7 +60,7 @@ pipeline {
                     emailext(
                         subject: 'Build Succeeded: ${env.JOB_NAME} #${env.BUILD_NUMBER}',
                         body: 'The build succeeded. Check the details at ${env.BUILD_URL}.',
-                        recipientProviders: [[$class: 'DevelopersRecipientProvider']]
+                         to: 'ks_safsafi@esi.dz'
                     )
                 }
 
@@ -68,7 +71,7 @@ pipeline {
                     emailext(
                         subject: 'Build Failed: ${env.JOB_NAME} #${env.BUILD_NUMBER}',
                         body: 'The build failed. Check the details at ${env.BUILD_URL}.',
-                        recipientProviders: [[$class: 'DevelopersRecipientProvider']]
+                        to: 'ks_safsafi@esi.dz'
                     )
                 }
             }
