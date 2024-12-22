@@ -7,6 +7,7 @@ pipeline {
             steps {
                 // Run tests using Gradle
                 bat './gradlew test'
+                
 
                 // Publish JUnit test results to Jenkins
                 junit 'build/test-results/test/*.xml'
