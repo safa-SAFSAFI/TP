@@ -67,11 +67,4 @@ sonarqube {
       //  property "sonar.cucumber.reportPaths", "build/reports/cucumber/cucumber.json" // Changez si vous générez des rapports JSON pour Cucumber
     }
 }
-cucumber {
-    reports {
-        json {
-            enabled = true
-            destination = file('build/reports/cucumber')
-        }
-    }
-}
+
