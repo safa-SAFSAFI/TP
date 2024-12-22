@@ -133,11 +133,11 @@ pipeline {
 }
 
 def notifySuccess(String message) {
-    slackSend(channel: '#team-channel', color: 'good', message: message)
+   // slackSend(channel: '#team-channel', color: 'good', message: message)
     mail(to: "${EMAIL_RECIPIENTS}", subject: 'Pipeline Success', body: message)
 }
 
 def notifyFailure(String message) {
-    slackSend(channel: '#team-channel', color: 'danger', message: message)
+    /*slackSend(channel: '#team-channel', color: 'danger', message: message)*/
     mail(to: "${EMAIL_RECIPIENTS}", subject: 'Pipeline Failed', body: message)
 }
