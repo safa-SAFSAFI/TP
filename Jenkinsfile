@@ -51,7 +51,12 @@ pipeline {
                 // Notify external service (Slack, etc.) about the build status
                 notifyEvents message: '<h1>Building...</h1>', token: '4iwq3njk9vw0ui7irxh0yiqhed0rf2qb'
             }
-
+             stage('Deploy') {
+            steps {
+                // Run the publish command (e.g., to push the build artifacts to a remote repository)
+                bat './gradlew publish'
+            }
+        }
             post {
                 // Notifications upon successful build
                 success {
@@ -78,11 +83,6 @@ pipeline {
         }
 
         // Stage for deploying the project
-        stage('Deploy') {
-            steps {
-                // Run the publish command (e.g., to push the build artifacts to a remote repository)
-                bat './gradlew publish'
-            }
-        }
+
     }
 }
