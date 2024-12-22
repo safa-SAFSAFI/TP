@@ -3,7 +3,7 @@ plugins {
     id 'maven-publish'
     id 'jacoco'
     id("org.sonarqube") version "5.1.0.4882"
-    id 'io.cucumber' version '7.10.0'
+   
 }
 
 group = 'com.example'
