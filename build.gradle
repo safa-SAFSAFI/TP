@@ -18,8 +18,9 @@ repositories {
             password = 'safa'
         }
     }
-    
+
 }
+
 
 publishing {
     repositories {
@@ -29,7 +30,6 @@ publishing {
                 username = 'myMavenRepo'
                 password = 'safa'
             }
-
         }
     }
 
