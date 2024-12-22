@@ -67,4 +67,7 @@ sonarqube {
       //  property "sonar.cucumber.reportPaths", "build/reports/cucumber/cucumber.json" // Changez si vous générez des rapports JSON pour Cucumber
     }
 }
-
+reports {
+    junitXml.enabled = true  // Active la génération des rapports au format XML
+    html.enabled = true      // Optionnel : génère également un rapport HTML
+}
