@@ -3,6 +3,7 @@ plugins {
     id 'maven-publish'
     id 'jacoco'
     id("org.sonarqube") version "5.1.0.4882"
+   // id 'io.cucumber' version '7.10.0'
 }
 
 group = 'com.example'
@@ -39,6 +40,8 @@ dependencies {
     testImplementation 'org.junit.jupiter:junit-jupiter-api:5.7.0'  // For JUnit 5
     testImplementation 'org.junit.jupiter:junit-jupiter-engine:5.7.0' // JUnit 5 engine
     testImplementation 'org.junit.jupiter:junit-jupiter-params:5.7.0' // If you're using parameterized tests
+    //testImplementation 'io.cucumber:cucumber-java:7.10.0'
+    //testImplementation 'io.cucumber:cucumber-spring:7.10.0'
 }
 
 
