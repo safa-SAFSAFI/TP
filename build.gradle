@@ -10,25 +10,19 @@ version = '1.0-SNAPSHOT'
 
 
 
-repositories {
-    maven {
-        url "https://mymavenrepo.com/repo/bLlXO4g2mfq6MLPc0mpj/"
-        credentials {
-            username = 'myMavenRepo'
-            password = 'safa'
-        }
-    }
 
-}
 
 
 publishing {
     repositories {
         maven {
-            url "https://mymavenrepo.com/repo/bLlXO4g2mfq6MLPc0mpj/"
+            url System.getenv("url")
+            //url "https://mymavenrepo.com/repo/bLlXO4g2mfq6MLPc0mpj/"
             credentials {
-                username = 'myMavenRepo'
-                password = 'safa'
+                username System.getenv("username")
+                password System.getenv("password")
+               //  username = 'myMavenRepo'
+                //password = 'safa'
             }
         }
     }
