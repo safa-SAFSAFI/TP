@@ -1,143 +1,85 @@
 pipeline {
     agent any
 
-    environment {
-        SONAR_HOST_URL = 'http://localhost:9000'  // URL de SonarQube
-        SONAR_LOGIN = credentials('sonarqube-token')  // Token sécurisé pour SonarQube
-        MAVEN_REPO_URL = 'https://mymavenrepo.com/repo/XXXX/'
-        MAVEN_REPO_USERNAME = credentials('maven-username') // Crédential sécurisé
-        MAVEN_REPO_PASSWORD = credentials('maven-password') // Crédential sécurisé
-        SLACK_WEBHOOK = credentials('slack-webhook') // URL webhook pour Slack
-        EMAIL_RECIPIENTS = 'team@example.com'
-    }
-
     stages {
-        // === PHASE 1: TEST ===
-        stage('Run Unit Tests') {
+        // Stage for running tests
+        stage('Test') {
             steps {
-                echo 'Running unit tests...'
-                sh './gradlew test'  // Lancement des tests unitaires
+                // Run tests using Gradle
+                bat './gradlew test'
+                // Publish JUnit test results to Jenkins
+                junit 'build/test-results/test/*.xml'
+                // Publish Cucumber test results
+                cucumber buildStatus: 'UNSTABLE',
+                         reportTitle: 'My report',
+                         fileIncludePattern: 'build/reports/*.json'
             }
-            post {
-                always {
-                    junit '**/build/test-results/test/*.xml' // Archivage des résultats
-                }
-                failure {
-                    script {
-                        notifyFailure("Unit tests failed")
-                    }
+        }
+
+        // Stage for code analysis using SonarQube
+        stage('Code Analysis') {
+            steps {
+                withSonarQubeEnv('sonar') {
+                    // Run SonarQube analysis
+                    bat './gradlew sonar'
                 }
             }
         }
 
-        stage('Generate Cucumber Reports') {
+        // Stage for checking the quality gate results from SonarQube
+        stage('Quality Gate') {
             steps {
-                echo 'Generating Cucumber reports...'
-                sh './gradlew test'  // Re-génération avec plugin Cucumber
-            }
-            post {
-                always {
-                    publishHTML(target: [
-                        allowMissing: false,
-                        alwaysLinkToLastBuild: true,
-                        keepAll: true,
-                        reportDir: 'build/reports/cucumber-html-reports',
-                        reportFiles: 'overview-features.html',
-                        reportName: 'Cucumber Test Report'
-                    ])
-                }
+                waitForQualityGate abortPipeline: true
             }
         }
 
-        // === PHASE 2: CODE ANALYSIS ===
-        stage('Code Analysis with SonarQube') {
+        // Stage for building the project
+        stage('Build') {
             steps {
-                echo 'Running SonarQube analysis...'
-                sh './gradlew sonarqube -Dsonar.host.url=${SONAR_HOST_URL} -Dsonar.login=${SONAR_LOGIN}'
-            }
-            post {
-                failure {
-                    script {
-                        notifyFailure("SonarQube analysis failed")
-                    }
-                }
-            }
-        }
+                // Run the build command
+                bat './gradlew build'
 
-        // === PHASE 3: CODE QUALITY CHECK ===
-        stage('Check Quality Gates') {
-            steps {
-                echo 'Checking SonarQube Quality Gates...'
-                timeout(time: 5, unit: 'MINUTES') {
-                    waitForQualityGate abortPipeline: true // Arrête si Quality Gate échoue
-                }
-            }
-        }
+                // Archive the JAR files generated during the build
+                archiveArtifacts artifacts: 'build/libs/*.jar', allowEmptyArchive: true
 
-        // === PHASE 4: BUILD ===
-        stage('Build Jar and Documentation') {
-            steps {
-                echo 'Building Jar file and generating documentation...'
-                sh './gradlew jar javadoc'
-            }
-            post {
-                always {
-                    archiveArtifacts artifacts: 'build/libs/*.jar', fingerprint: true
-                    archiveArtifacts artifacts: 'build/docs/javadoc/**', fingerprint: true
-                }
-            }
-        }
+                // Archive Javadoc files if they are generated
+                archiveArtifacts artifacts: '**/build/docs/javadoc/**/*', allowEmptyArchive: true
 
-        // === PHASE 5: DEPLOY ===
-        stage('Deploy to Maven Repo') {
-            steps {
-                echo 'Deploying to Maven repository...'
-                sh """
-                ./gradlew publish \
-                -Dmaven.repo.url=${MAVEN_REPO_URL} \
-                -Dmaven.repo.username=${MAVEN_REPO_USERNAME} \
-                -Dmaven.repo.password=${MAVEN_REPO_PASSWORD}
-                """
+                // Notify external service (Slack, etc.) about the build status
+                notifyEvents message: '<h1>Building...</h1>', token: '4iwq3njk9vw0ui7irxh0yiqhed0rf2qb'
             }
+
             post {
+                // Notifications upon successful build
                 success {
-                    script {
-                        notifySuccess("Deployment to Maven Repo successful!")
-                    }
+                  //  notifyEvents message: '<h1>succeeded and built...</h1>', token: '4lwq3njk9vw0ui7irxh0yiqhed0rf2qb'
+                    // Send email notification on success
+                    emailext(
+                        subject: 'Build Succeeded: ${env.JOB_NAME} #${env.BUILD_NUMBER}',
+                        body: 'The build succeeded. Check the details at ${env.BUILD_URL}.',
+                        recipientProviders: [[$class: 'DevelopersRecipientProvider']]
+                    )
                 }
+
+                // Notifications if the build fails
                 failure {
-                    script {
-                        notifyFailure("Deployment failed!")
-                    }
+                   // notifyEvents message: '<h1>failed to build...</h1>', token: '4iwq3njk9vw0ui7irxh0yiqhed0rf2qb'
+                    // Send email notification on failure
+                    emailext(
+                        subject: 'Build Failed: ${env.JOB_NAME} #${env.BUILD_NUMBER}',
+                        body: 'The build failed. Check the details at ${env.BUILD_URL}.',
+                        recipientProviders: [[$class: 'DevelopersRecipientProvider']]
+                    )
                 }
             }
         }
 
-        // === PHASE 6: NOTIFICATION ===
-        stage('Notify Team') {
+        // Stage for deploying the project
+        stage('Deploy') {
             steps {
-                script {
-                    notifySuccess("Pipeline executed successfully!")
-                }
+                // Run the publish command (e.g., to push the build artifacts to a remote repository)
+                bat './gradlew publish'
             }
         }
     }
-
-    post {
-        failure {
-            script {
-                notifyFailure("Pipeline failed!")
-            }
-        }
-    }
-}
-
-def notifySuccess(String message) {
-   // slackSend(channel: '#team-channel', color: 'good', message: message)
-    mail(to: "${EMAIL_RECIPIENTS}", subject: 'Pipeline Success', body: message)
-}
-
-def notifyFailure(String message) {
-    /*slackSend(channel: '#team-channel', color: 'danger', message: message)*/
-    mail(to: "${EMAIL_RECIPIENTS}", subject: 'Pipeline Failed', body: message)
 }
