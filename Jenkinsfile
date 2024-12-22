@@ -46,7 +46,7 @@ pipeline {
                     )
                 }
                 failure {
-                   // slackSend(channel: SLACK_CHANNEL, color: 'danger', message: 'Build Failed!')
+                   //       slackSend(channel: SLACK_CHANNEL, color: 'danger', message: 'Build Failed!')
                     emailext(
                         subject: 'Build Failed: ${env.JOB_NAME} #${env.BUILD_NUMBER}',
                         body: 'The build failed. Check the details at ${env.BUILD_URL}.',
