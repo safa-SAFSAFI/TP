@@ -11,7 +11,7 @@ pipeline {
         stage('Test') {
             steps {
                 bat './gradlew test'
-                junit '**/build/test-results/test/*.xml'
+                junit '/build/test-results/test/*.xml'
                 cucumber buildStatus: 'UNSTABLE', reportTitle: 'Cucumber Report', fileIncludePattern: 'build/cucumber-reports/*.json'
             }
         }
